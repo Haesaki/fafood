@@ -4,3 +4,6 @@
 /mapper/target/
 /pojo/target/
 /service/target/
+
+/api/src/main/resources/application-dev.yml
+/api/randomPwd
