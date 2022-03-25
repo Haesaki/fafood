@@ -7,7 +7,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
 @MapperScan(basePackages = "com.sin.mapper")
-@ComponentScan(basePackages = {"org.n3r.idworker", "com.sin.config"})
+@ComponentScan(basePackages = {"org.n3r.idworker", "com.sin.config", "com.sin.controller", "com.sin.service", "com.sin.aspect", "com.sin.mapper"})
 public class Application {
     public static void main(String[] args) {
         try {
