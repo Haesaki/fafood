@@ -56,6 +56,7 @@ public class PassportController {
             e.printStackTrace();
             return HttpJSONResult.errorMsg("Internal Error in creating user!");
         }
+        // TODO 生成用户token 存入redis
         return HttpJSONResult.ok();
     }
 
@@ -73,6 +74,8 @@ public class PassportController {
             return HttpJSONResult.errorMsg("username do not match the passport");
         setNullProperty(userResult);
         CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(userResult), true);
+        // TODO 生成用户token 存入redis
+        // TODO 同步其他设备的数据
         return HttpJSONResult.ok(userResult);
     }
 

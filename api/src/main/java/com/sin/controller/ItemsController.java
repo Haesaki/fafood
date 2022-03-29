@@ -72,11 +72,11 @@ public class ItemsController {
             @ApiParam(name = "itemId", value = "商品id", required = true)
             @RequestParam String itemId,
             @ApiParam(name = "level", value = "评价等级", required = false)
-            @RequestParam Integer level,
+            @RequestParam(value = "level", required = false) Integer level,
             @ApiParam(name = "page", value = "查询下一页的第几页", required = false)
-            @RequestParam Integer page,
+            @RequestParam(value = "page", required = false) Integer page,
             @ApiParam(name = "pageSize", value = "分页的每一页显示的条数", required = false)
-            @RequestParam Integer pageSize) {
+            @RequestParam(value = "pageSize", required = false) Integer pageSize) {
 
         if (StringUtils.isBlank(itemId)) {
             return HttpJSONResult.errorMsg(null);
@@ -87,7 +87,7 @@ public class ItemsController {
         }
 
         if (pageSize == null) {
-            pageSize = 0;
+            pageSize = 10;
         }
 
         PagedGridResult grid = itemService.queryPagedComments(itemId,
@@ -119,7 +119,7 @@ public class ItemsController {
         }
 
         if (pageSize == null) {
-            pageSize = 0;
+            pageSize = 10;
         }
 
         PagedGridResult grid = itemService.searhItems(keywords,
@@ -151,7 +151,7 @@ public class ItemsController {
         }
 
         if (pageSize == null) {
-            pageSize = 0;
+            pageSize = 10;
         }
 
         PagedGridResult grid = itemService.searhItems(catId,
