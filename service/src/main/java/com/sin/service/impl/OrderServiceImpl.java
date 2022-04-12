@@ -7,7 +7,7 @@ import com.sin.pojo.*;
 import com.sin.pojo.bo.SubmitOrderBO;
 import com.sin.pojo.vo.MerchantOrdersVO;
 import com.sin.pojo.vo.OrderVO;
-import com.sin.service.ItemService;
+import com.sin.service.CategoryService;
 import com.sin.service.OrderService;
 import com.sin.service.UserAddressService;
 import com.sin.subenum.OrderStatusEnum;
@@ -37,7 +37,7 @@ public class OrderServiceImpl implements OrderService {
     private UserAddressService addressService;
 
     @Autowired
-    private ItemService itemService;
+    private CategoryService.ItemService itemService;
 
     @Autowired
     private Sid sid;

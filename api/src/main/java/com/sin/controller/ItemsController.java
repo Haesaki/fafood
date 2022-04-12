@@ -7,7 +7,7 @@ import com.sin.pojo.ItemsSpec;
 import com.sin.pojo.vo.CommentLevelCountsVO;
 import com.sin.pojo.vo.ItemInfoVO;
 import com.sin.pojo.vo.ShopcartVO;
-import com.sin.service.ItemService;
+import com.sin.service.CategoryService;
 import com.sin.util.HttpJSONResult;
 import com.sin.util.PagedGridResult;
 import io.swagger.annotations.Api;
@@ -25,7 +25,7 @@ import java.util.List;
 public class ItemsController {
 
     @Autowired
-    private ItemService itemService;
+    private CategoryService.ItemService itemService;
 
     @ApiOperation(value = "查询商品详情", notes = "查询商品详情", httpMethod = "GET")
     @GetMapping("/info/{itemId}")

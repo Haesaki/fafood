@@ -8,7 +8,7 @@ import com.sin.pojo.vo.CommentLevelCountsVO;
 import com.sin.pojo.vo.ItemCommentVO;
 import com.sin.pojo.vo.SearchItemsVO;
 import com.sin.pojo.vo.ShopcartVO;
-import com.sin.service.ItemService;
+import com.sin.service.CategoryService;
 import com.sin.subenum.CommentLevel;
 import com.sin.subenum.YesOrNo;
 import com.sin.util.DesensitizationUtil;
@@ -22,7 +22,7 @@ import tk.mybatis.mapper.entity.Example;
 import java.util.*;
 
 @Service
-public class ItemServiceImpl implements ItemService {
+public class ItemServiceImpl implements CategoryService.ItemService {
 
     @Autowired
     private ItemsMapper itemsMapper;
