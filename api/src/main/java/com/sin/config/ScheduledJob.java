@@ -1,19 +1,15 @@
 package com.sin.config;
 
-import com.sin.service.OrderService;
-import com.sin.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ScheduledJob {
     private final Logger LOGGER = LoggerFactory.getLogger(ScheduledJob.class);
 
-    @Autowired
-    private OrderService orderService;
+//    @Autowired
+//    private OrderService orderService;
 
     /**
      * 定时任务关闭超期未支付订单，存在的弊端
@@ -27,9 +23,9 @@ public class ScheduledJob {
      * 演示队列
      * 10：12分下单，非付款状态，11：12分钟检查，如果当前状态还是10，则直接关闭订单即可
      */
-    @Scheduled(cron = "0/1 0 * * * ? *")
-    public void autoCloseOrder() {
-        LOGGER.debug("Auto Close Order every 3 second: " + DateUtil.getCurrentDateString(DateUtil.DATETIME_PATTERN));
-        orderService.closeOrder();
-    }
+//    @Scheduled(cron = "0/1 0 * * * ? *")
+//    public void autoCloseOrder() {
+//        LOGGER.debug("Auto Close Order every 3 second: " + DateUtil.getCurrentDateString(DateUtil.DATETIME_PATTERN));
+//        orderService.closeOrder();
+//    }
 }
