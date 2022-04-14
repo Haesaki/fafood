@@ -10,7 +10,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 映射本地静态资源
-        registry.addResourceHandler("/**").addResourceLocations("/fafood/images/");
+        registry.addResourceHandler("/**")
+                .addResourceLocations("/fafood/images/")
+                .addResourceLocations("classpath:/META-INF/resources"); // swagger 2
         WebMvcConfigurer.super.addResourceHandlers(registry);
     }
 
