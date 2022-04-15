@@ -29,14 +29,14 @@ public class MyOrdersController extends BaseController {
     @ApiOperation(value = "query order list", notes = "query order list", httpMethod = "POST")
     @PostMapping("/query")
     public HttpJSONResult query(
-            @ApiParam(name = "userId", value = "userId", required = true)
-            @RequestParam String userId,
-            @ApiParam(name = "orderStatus", value = "orderStatus", required = false)
-            @RequestParam Integer orderStatus,
-            @ApiParam(name = "page", value = "path index of query", required = false)
-            @RequestParam Integer page,
-            @ApiParam(name = "pageSize", value ="size of query page", required = false)
-            @RequestParam Integer pageSize) {
+            @ApiParam(name = "userId", value = "用户id", required = true)
+            @RequestParam(required = true) String userId,
+            @ApiParam(name = "orderStatus", value = "订单状态", required = false)
+            @RequestParam(required = false) Integer orderStatus,
+            @ApiParam(name = "page", value = "查询下一页的第几页", required = false)
+            @RequestParam(required = false) Integer page,
+            @ApiParam(name = "pageSize", value = "分页的每一页显示的条数", required = false)
+            @RequestParam(required = false) Integer pageSize) {
 
         if (StringUtils.isBlank(userId)) {
             return HttpJSONResult.errorMsg(null);
