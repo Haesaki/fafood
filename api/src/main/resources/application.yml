@@ -27,6 +27,10 @@ spring:
     multipart:
       max-file-size: 512000 # 文件大小 500 KB
       max-request-size: 512000 # 文件请求大小 500 KB
+  # redis configuration
+#  redis:
+#    url: localhost:8080
+#    password: localhost
 
 # mybatis 配置
 mybatis:
