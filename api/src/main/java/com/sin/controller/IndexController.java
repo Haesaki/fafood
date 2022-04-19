@@ -8,9 +8,12 @@ import com.sin.service.CarouselService;
 import com.sin.service.CategoryService;
 import com.sin.subenum.YesOrNo;
 import com.sin.util.HttpJSONResult;
+import com.sin.util.JsonUtils;
+import com.sin.util.RedisOperator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -36,10 +40,20 @@ public class IndexController {
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private RedisOperator redisOperator;
+
     @ApiOperation(value = "获取首页联播图")
     @GetMapping("/carousel")
     public HttpJSONResult getCarousel(){
-        List<Carousel> ret = carouselService.queryAllCarousels(YesOrNo.YES.type);
+        List<Carousel> ret;
+        String carouselStr = redisOperator.get("carousel");
+        if(StringUtils.isBlank(carouselStr)){
+            ret = carouselService.queryAllCarousels(YesOrNo.YES.type);
+            redisOperator.set("carousel", JsonUtils.objectToJson(ret));
+        } else{
+            ret = JsonUtils.jsonToList(carouselStr, Carousel.class);
+        }
         return HttpJSONResult.ok(ret);
     }
 
@@ -51,8 +65,15 @@ public class IndexController {
     @ApiOperation(value = "获取商品分类(一级分类)", notes = "获取商品分类(一级分类)", httpMethod = "GET")
     @GetMapping("/cats")
     public HttpJSONResult cats() {
-        List<Category> list = categoryService.queryAllRootLevelCat();
-        return HttpJSONResult.ok(list);
+        List<Category> ret;
+        String catsStr = redisOperator.get("catsFirst");
+        if(StringUtils.isBlank(catsStr)){
+            ret = categoryService.queryAllRootLevelCat();
+            redisOperator.set("catsFirst", JsonUtils.objectToJson(ret));
+        } else{
+            ret = JsonUtils.jsonToList(catsStr, Category.class);
+        }
+        return HttpJSONResult.ok(ret);
     }
 
     @ApiOperation(value = "获取商品子分类", notes = "获取商品子分类", httpMethod = "GET")
@@ -65,7 +86,26 @@ public class IndexController {
             return HttpJSONResult.errorMsg("分类不存在");
         }
 
-        List<CategoryVO> list = categoryService.getSubCatList(rootCatId);
+        List<CategoryVO> list;
+        String subCatStr = redisOperator.get("subCat:" + String.valueOf(rootCatId));
+        if(StringUtils.isBlank(subCatStr)){
+            list = categoryService.getSubCatList(rootCatId);
+            /**
+             * 查询的key在redis中不存在，
+             * 对应的id在数据库也不存在，
+             * 此时被非法用户进行攻击，大量的请求会直接打在db上，
+             * 造成宕机，从而影响整个系统，
+             * 这种现象称之为缓存穿透。
+             * 解决方案：把空的数据也缓存起来，比如空字符串，空对象，空数组或list
+             */
+            if(list != null && list.size() > 0){
+                redisOperator.set("subCat:" + String.valueOf(rootCatId), JsonUtils.objectToJson(list));
+            }else{
+                redisOperator.set("subCat:" + String.valueOf(rootCatId), JsonUtils.objectToJson(list), 5*60);
+            }
+        } else{
+            list = JsonUtils.jsonToList(subCatStr, CategoryVO.class);
+        }
         return HttpJSONResult.ok(list);
     }
 
