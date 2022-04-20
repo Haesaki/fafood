@@ -4,6 +4,7 @@ import com.sin.mapper.OrderItemsMapper;
 import com.sin.mapper.OrderStatusMapper;
 import com.sin.mapper.OrdersMapper;
 import com.sin.pojo.*;
+import com.sin.pojo.bo.ShopcartBO;
 import com.sin.pojo.bo.SubmitOrderBO;
 import com.sin.pojo.vo.MerchantOrdersVO;
 import com.sin.pojo.vo.OrderVO;
@@ -13,12 +14,14 @@ import com.sin.service.UserAddressService;
 import com.sin.subenum.OrderStatusEnum;
 import com.sin.subenum.YesOrNo;
 import com.sin.util.DateUtil;
+import org.junit.jupiter.api.Order;
 import org.n3r.idworker.Sid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -44,53 +47,91 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
-    public OrderVO createOrder(SubmitOrderBO submitOrderBO) {
+    public void updateOrderStatus(String orderId, Integer orderStatus) {
 
+        OrderStatus paidStatus = new OrderStatus();
+        paidStatus.setOrderId(orderId);
+        paidStatus.setOrderStatus(orderStatus);
+        paidStatus.setPayTime(new Date());
+
+        orderStatusMapper.updateByPrimaryKeySelective(paidStatus);
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public OrderStatus queryOrderStatusInfo(String orderId) {
+        return orderStatusMapper.selectByPrimaryKey(orderId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public void closeOrder() {
+
+        // 查询所有未付款订单，判断时间是否超时（1天），超时则关闭交易
+        OrderStatus queryOrder = new OrderStatus();
+        queryOrder.setOrderStatus(OrderStatusEnum.WAIT_PAY.type);
+        List<OrderStatus> list = orderStatusMapper.select(queryOrder);
+        for (OrderStatus os : list) {
+            // 获得订单创建时间
+            Date createdTime = os.getCreatedTime();
+            // 和当前时间进行对比
+            int days = DateUtil.daysBetween(createdTime, new Date());
+            if (days >= 1) {
+                // 超过1天，关闭订单
+                doCloseOrder(os.getOrderId());
+            }
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    void doCloseOrder(String orderId) {
+        OrderStatus close = new OrderStatus();
+        close.setOrderId(orderId);
+        close.setOrderStatus(OrderStatusEnum.CLOSE.type);
+        close.setCloseTime(new Date());
+        orderStatusMapper.updateByPrimaryKeySelective(close);
+    }
+
+    @Override
+    public OrderVO createOrder(List<ShopcartBO> shopcartList, SubmitOrderBO submitOrderBO) {
         String userId = submitOrderBO.getUserId();
         String addressId = submitOrderBO.getAddressId();
         String itemSpecIds = submitOrderBO.getItemSpecIds();
         Integer payMethod = submitOrderBO.getPayMethod();
         String leftMsg = submitOrderBO.getLeftMsg();
-        // 包邮费用设置为0
+        // 包邮设置为0
         Integer postAmount = 0;
-
         String orderId = sid.nextShort();
-
         UserAddress address = addressService.queryUserAddres(userId, addressId);
 
-        // 1. 新订单数据保存
+        // 1. save the new order data
         Orders newOrder = new Orders();
         newOrder.setId(orderId);
         newOrder.setUserId(userId);
-
         newOrder.setReceiverName(address.getReceiver());
         newOrder.setReceiverMobile(address.getMobile());
         newOrder.setReceiverAddress(address.getProvince() + " "
                 + address.getCity() + " "
                 + address.getDistrict() + " "
                 + address.getDetail());
-
-//        newOrder.setTotalAmount();
-//        newOrder.setRealPayAmount();
         newOrder.setPostAmount(postAmount);
-
         newOrder.setPayMethod(payMethod);
         newOrder.setLeftMsg(leftMsg);
-
         newOrder.setIsComment(YesOrNo.NO.type);
         newOrder.setIsDelete(YesOrNo.NO.type);
         newOrder.setCreatedTime(new Date());
         newOrder.setUpdatedTime(new Date());
 
-
         // 2. 循环根据itemSpecIds保存订单商品信息表
         String itemSpecIdArr[] = itemSpecIds.split(",");
         Integer totalAmount = 0;    // 商品原价累计
         Integer realPayAmount = 0;  // 优惠后的实际支付价格累计
+        List<ShopcartBO> toBeRemovedShopcatdList = new ArrayList<>();
         for (String itemSpecId : itemSpecIdArr) {
-
-            // TODO 整合redis后，商品购买的数量重新从redis的购物车中获取
-            int buyCounts = 1;
+            ShopcartBO cartItem = getBuyCountsFromShopcart(shopcartList, itemSpecId);
+            // 整合redis后，商品购买的数量重新从redis的购物车中获取
+            int buyCounts = cartItem.getBuyCount();
+            toBeRemovedShopcatdList.add(cartItem);
 
             // 2.1 根据规格id，查询规格的具体信息，主要获取价格
             ItemsSpec itemSpec = itemService.queryItemSpecById(itemSpecId);
@@ -142,54 +183,20 @@ public class OrderServiceImpl implements OrderService {
         OrderVO orderVO = new OrderVO();
         orderVO.setOrderId(orderId);
         orderVO.setMerchantOrdersVO(merchantOrdersVO);
+        orderVO.setToBeRemovedShopcatdList(toBeRemovedShopcatdList);
 
         return orderVO;
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
-    @Override
-    public void updateOrderStatus(String orderId, Integer orderStatus) {
-
-        OrderStatus paidStatus = new OrderStatus();
-        paidStatus.setOrderId(orderId);
-        paidStatus.setOrderStatus(orderStatus);
-        paidStatus.setPayTime(new Date());
-
-        orderStatusMapper.updateByPrimaryKeySelective(paidStatus);
-    }
-
-    @Transactional(propagation = Propagation.SUPPORTS)
-    @Override
-    public OrderStatus queryOrderStatusInfo(String orderId) {
-        return orderStatusMapper.selectByPrimaryKey(orderId);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED)
-    @Override
-    public void closeOrder() {
-
-        // 查询所有未付款订单，判断时间是否超时（1天），超时则关闭交易
-        OrderStatus queryOrder = new OrderStatus();
-        queryOrder.setOrderStatus(OrderStatusEnum.WAIT_PAY.type);
-        List<OrderStatus> list = orderStatusMapper.select(queryOrder);
-        for (OrderStatus os : list) {
-            // 获得订单创建时间
-            Date createdTime = os.getCreatedTime();
-            // 和当前时间进行对比
-            int days = DateUtil.daysBetween(createdTime, new Date());
-            if (days >= 1) {
-                // 超过1天，关闭订单
-                doCloseOrder(os.getOrderId());
+    /**
+     * 从redis中的购物车里获取商品，目的：counts
+     */
+    private ShopcartBO getBuyCountsFromShopcart(List<ShopcartBO> shopcartList, String specId) {
+        for (ShopcartBO cart : shopcartList) {
+            if (cart.getSpecId().equals(specId)) {
+                return cart;
             }
         }
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED)
-    void doCloseOrder(String orderId) {
-        OrderStatus close = new OrderStatus();
-        close.setOrderId(orderId);
-        close.setOrderStatus(OrderStatusEnum.CLOSE.type);
-        close.setCloseTime(new Date());
-        orderStatusMapper.updateByPrimaryKeySelective(close);
+        return null;
     }
 }
