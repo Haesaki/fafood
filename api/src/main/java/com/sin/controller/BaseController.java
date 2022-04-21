@@ -1,16 +1,29 @@
 package com.sin.controller;
 
 import com.sin.pojo.Orders;
+import com.sin.pojo.Users;
+import com.sin.pojo.vo.UsersVO;
 import com.sin.service.center.MyOrdersService;
 import com.sin.util.HttpJSONResult;
+import com.sin.util.RedisOperator;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 import java.io.File;
+import java.util.UUID;
 
 @Controller
 public class BaseController {
-    public static final String FOODIE_SHOPCART = "shopcart";
+
+    @Autowired
+    private RedisOperator redisOperator;
+
+    public static final String FAFOOD_SHOPCART = "FAFOOD_SHOPCART";
+
+    public static final String REDIS_USER_TOKEN = "redis_user_token";
+
+    public final String payReturnUrl = "http://localhost:8080/fafood/payment/createMerchantOrder";
 
     public static final Integer COMMON_PAGE_SIZE = 10;
 
@@ -35,5 +48,26 @@ public class BaseController {
             return HttpJSONResult.errorMsg("ORDER DOES NOT EXIST!");
         }
         return HttpJSONResult.ok(order);
+    }
+
+    public UsersVO conventUserVO(Users userResult){
+        String uniqueToken = UUID.randomUUID().toString().trim();
+        redisOperator.set(REDIS_USER_TOKEN + ":" + userResult.getId(), uniqueToken);
+        UsersVO usersVO = new UsersVO();
+
+        // userResult = setNullProperty(userResult);
+        BeanUtils.copyProperties(userResult, usersVO);
+        usersVO.setUserUniqueToken(uniqueToken);
+        return usersVO;
+    }
+
+    public Users setNullProperty(Users userResult) {
+        userResult.setPassword(null);
+        userResult.setMobile(null);
+        userResult.setEmail(null);
+        userResult.setCreatedTime(null);
+        userResult.setUpdatedTime(null);
+        userResult.setBirthday(null);
+        return userResult;
     }
 }

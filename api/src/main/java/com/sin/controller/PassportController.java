@@ -3,27 +3,25 @@ package com.sin.controller;
 import com.sin.pojo.Users;
 import com.sin.pojo.bo.ShopcartBO;
 import com.sin.pojo.bo.UserBO;
+import com.sin.pojo.vo.UsersVO;
 import com.sin.service.UserService;
 import com.sin.util.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.Conversion;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Api(value = "注册登录接口")
 @RestController
 @RequestMapping("/passport")
-public class PassportController {
-    private String FAFOOD_SHOPCART = "FAFOOD_SHOPCART";
-
+public class PassportController extends BaseController{
     @Autowired
     private UserService userService;
 
@@ -64,8 +62,8 @@ public class PassportController {
         }
         //  生成用户token 存入redis
         if (user != null) {
-            user = setNullProperty(user);
-            CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(user), true);
+            UsersVO usersVO = conventUserVO(user);
+            CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(usersVO), true);
             syncShopcartData(user.getId(), request, response);
         }
         return HttpJSONResult.ok();
@@ -80,32 +78,23 @@ public class PassportController {
             return HttpJSONResult.errorMsg("ERROR in USERNAME OR PASSPORT");
         Users userResult = userService.queryUserForLogin(username, MD5Utils.getMD5Str(passport));
         if (userResult == null) return HttpJSONResult.errorMsg("username do not match the passport");
-        setNullProperty(userResult);
-        CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(userResult), true);
+        // setNullProperty(userResult);
         //  生成用户token 存入redis
+        UsersVO usersVO = conventUserVO(userResult);
+        CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(usersVO), true);
         //  同步其他设备的数据
         syncShopcartData(userResult.getId(), request, response);
         return HttpJSONResult.ok(userResult);
     }
 
-    private Users setNullProperty(Users user) {
-        if (user == null) return null;
-        user.setPassword(null);
-        user.setMobile(null);
-        user.setEmail(null);
-        user.setCreatedTime(null);
-        user.setUpdatedTime(null);
-        user.setBirthday(null);
-        return user;
-    }
-
-
     @ApiOperation(value = "用户退出登录", notes = "用户退出登录", httpMethod = "post")
     @PostMapping("/logout")
     public HttpJSONResult logoutRequest(@RequestBody String userId, HttpServletRequest request, HttpServletResponse response) throws Exception {
         CookieUtils.deleteCookie(request, response, "user");
-        // TODO 用户退出登录,需要清空购物车
-        // TODO 分布式会话清楚其他数据
+        // 用户退出登录,需要清空购物车
+        redisOperator.del(REDIS_USER_TOKEN + ":" + userId);
+        // 分布式会话清楚其他数据
+        CookieUtils.deleteCookie(request, response, FAFOOD_SHOPCART);
         return HttpJSONResult.ok();
     }
 

@@ -35,11 +35,8 @@ import java.util.List;
 @Api(value = "orders related")
 @RestController
 @RequestMapping("orders")
-public class OrdersController {
+public class OrdersController extends BaseController{
     final static Logger logger = LoggerFactory.getLogger(OrdersController.class);
-
-    private final String payReturnUrl = "http://localhost:8080/fafood/payment/createMerchantOrder";
-    private final String FAFOOD_SHOPCART = "FAFOOD_SHOPCART";
     @Autowired
     private OrderService orderService;
 

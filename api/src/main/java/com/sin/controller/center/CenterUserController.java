@@ -3,6 +3,7 @@ package com.sin.controller.center;
 import com.sin.controller.BaseController;
 import com.sin.pojo.Users;
 import com.sin.pojo.bo.center.CenterUserBO;
+import com.sin.pojo.vo.UsersVO;
 import com.sin.resource.FileUploader;
 import com.sin.service.center.CenterUserService;
 import com.sin.util.CookieUtils;
@@ -124,10 +125,12 @@ public class CenterUserController extends BaseController {
 
         // 更新用户头像到数据库
         Users userResult = centerUserService.updateUserFace(userId, finalUserFaceUrl);
+        // userResult = setNullProperty(userResult);
+        UsersVO usersVO = conventUserVO(userResult);
 
-        userResult = setNullProperty(userResult);
+
         CookieUtils.setCookie(request, response, "user",
-                JsonUtils.objectToJson(userResult), true);
+                JsonUtils.objectToJson(usersVO), true);
 
         // TODO 后续要改，增加令牌token，会整合进redis，分布式会话
 
@@ -153,12 +156,13 @@ public class CenterUserController extends BaseController {
         }
 
         Users userResult = centerUserService.updateUserInfo(userId, centerUserBO);
-
-        userResult = setNullProperty(userResult);
-        CookieUtils.setCookie(request, response, "user",
-                JsonUtils.objectToJson(userResult), true);
-
         // TODO 后续要改，增加令牌token，会整合进redis，分布式会话
+        // userResult = setNullProperty(userResult);
+        UsersVO usersVO = conventUserVO(userResult);
+        CookieUtils.setCookie(request, response, "user",
+                JsonUtils.objectToJson(usersVO), true);
+
+
 
         return HttpJSONResult.ok();
     }
@@ -175,15 +179,5 @@ public class CenterUserController extends BaseController {
             map.put(errorField, errorMsg);
         }
         return map;
-    }
-
-    private Users setNullProperty(Users userResult) {
-        userResult.setPassword(null);
-        userResult.setMobile(null);
-        userResult.setEmail(null);
-        userResult.setCreatedTime(null);
-        userResult.setUpdatedTime(null);
-        userResult.setBirthday(null);
-        return userResult;
     }
 }

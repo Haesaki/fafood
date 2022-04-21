@@ -19,10 +19,8 @@ import java.util.List;
 @Api(value = "购物车接口controller", tags = {"购物车接口相关的api"})
 @RequestMapping("shopcart")
 @RestController
-public class ShopcatController {
+public class ShopcatController extends BaseController{
     private RedisOperator redisOperator;
-
-    private String FAFOOD_SHOPCART = "FAFOOD_SHOPCART";
 
     @Autowired
     public ShopcatController(RedisOperator redisOperator){

@@ -219,4 +219,87 @@ Redis线程模型
 
 ![image-20220419162209516](2 redis.assets/image-20220419162209516.png)
 
-  
+### 持久化
+#### RDB
+
+RDB 每隔一段时间 进行持久化
+
+#### AOF
+
+Append of File
+
+### 主从架构
+
+<img src="2 redis.assets/image-20220420202036902.png" alt="image-20220420202036902" style="zoom:50%;" />
+
+<img src="2 redis.assets/image-20220420202759632.png" alt="image-20220420202759632" style="zoom:50%;" />
+
+这样比较奇特 但是主要目的是降低主服务器 更新的压力 使用频率不是很高
+
+<img src="2 redis.assets/image-20220420202828256.png" alt="image-20220420202828256" style="zoom:50%;" />
+
+#### 无磁盘化复制
+
+RDB的数据同步方式，用于主服务器和从服务器之间同步数据
+
+- 磁盘复制：创建一个子进程写RDB文件到磁盘上面去，后面文件会被父进程依次传输到 replicas
+
+- 无磁盘复制的话：写入会创建一个新的进程直接将RDB文件从socket发送到复制节点上面去，也是依次传输，（每个子节点都会放到一个队列里面，然后依次发送rdb文件）
+
+  无磁盘化，主节点会等待一个可配置的时间在开始传输节点之前，可以和多个子节点并行的传输文件
+
+  当磁盘慢 网络速度快的时候，无磁盘的复制方式更好
+
+### redis 缓存过期策略
+
+- 主动 定期删除
+- 被动 惰性删除
+- 内存淘汰管理机制
+  - MEMORY MANAGEMENT
+    - volatile-lru			evict using approximated lru among the keys with an expire set.
+    - allkeys-lru            evict any key using approximated lru
+    - volatile-lfu           evict using approximated lfu among the keys with an expire set.
+    - allkeys-lfu           evict any key using approximated lfu
+    - volatile-random  remove a random key among the ones with an expire set
+    - allkeys-random  remove a random key, any key
+    - volatile-ttl           remove the key with the nearest expire time (minor TTL)
+    - noeviction          do not evict anything just return an error on write operations
+  - maxmemory
+
+### 哨兵 机制 以及配置
+
+### 缓存穿透
+
+就是恶意的发送一些数据库里面不存在的key给后端，而如果没有在redis里面记录该值，就会导致大量无效查询落到数据库里，导致数据库压力过大
+
+### 缓存雪崩
+
+大面积的key全部失效，不能提供缓存服务， 同时具有大量的请求访问，由于大量的key失效了，这些查询请求都会落到数据库上面去 导致数据库的宕机，重启之后，数据库还可能会宕机。
+
+只能缓解这种现象
+
+- [永不过期](https://leetcode-cn.com/circle/discuss/WaJ3eI/)，部分可能存在不需要过期的需求
+- 过期时间错开，可以随机设置过期时间 或者时间错开的
+- 多缓存结合：多种缓存结合在一起 先查询 redis 再查询memcache 然后最后才会转发到数据库
+
+### MultiGet 批量查询优化
+
+```java
+redisTemplate.opsForValue().multiGet(keys);
+```
+
+### Pipeline 批量查询优化
+
+```java
+List<Object> result = redisTemplate.executePipelined(new RedisCallback<String>() {
+    @Override
+    public String doInRedis(RedisConnection connection) throws DataAccessException {
+        StringRedisConnection src = (StringRedisConnection)connection;
+        for (String k : keys) {
+            src.get(k);
+        }
+        return null;
+    }
+});
+```
+
