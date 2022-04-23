@@ -1,0 +1,13 @@
+# for demo, which properties are lacked in the application.yml (I use another configuration file during my developing, application-dev.yml)
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/fafood?useSSL=false&useUnicode=true&characterEncoding=UTF-8&autoReconnect=TRUE
+    username: localhost
+    password: localhost
+  redis:
+    password: localhost
+    host: localhost
+    port: 17177
+    database: 0
+  elasticsearch:
+    uris: localhost:9200

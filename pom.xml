@@ -33,6 +33,8 @@
         <module>service</module>
         <!-- api 依赖于 service api -> service -> mapper -> pojo -> common -->
         <module>api</module>
+        <!-- search -->
+        <module>search</module>
     </modules>
 
     <dependencies>
@@ -152,17 +154,17 @@
         </dependency>
 
         <!--  引入spring 安全框架-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-security</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-security</artifactId>-->
+        <!--        </dependency>-->
         <!-- REDIS -->
         <!-- https://mvnrepository.com/artifact/org.springframework.session/spring-session-data-redis -->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.session</groupId>-->
-<!--            <artifactId>spring-session-data-redis</artifactId>-->
-<!--            <version>2.5.6</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.session</groupId>-->
+        <!--            <artifactId>spring-session-data-redis</artifactId>-->
+        <!--            <version>2.5.6</version>-->
+        <!--        </dependency>-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -181,7 +183,12 @@
             <version>4.1.0</version>
         </dependency>
 
-
+        <!--Elastic Search-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+            <version>2.6.7</version>
+        </dependency>
     </dependencies>
 
 </project>

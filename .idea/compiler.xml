@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="pojo" />
         <module name="mapper" />
+        <module name="search" />
         <module name="api" />
         <module name="common" />
         <module name="service" />
@@ -21,6 +22,7 @@
       <module name="common" options="-parameters" />
       <module name="mapper" options="-parameters" />
       <module name="pojo" options="-parameters" />
+      <module name="search" options="-parameters" />
       <module name="service" options="-parameters" />
     </option>
   </component>
