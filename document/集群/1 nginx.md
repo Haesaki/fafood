@@ -292,7 +292,41 @@ make install
 
 ### Nginx遇到的问题
 
+## 源码安装
 
+```shell
+# 1. 配置 
+./configure \
+--prefix=/usr/local/nginx \
+--pid-path=/var/run/nginx/nginx.pid \
+--lock-path=/var/lock/nginx.lock \
+--error-log-path=/var/log/nginx/error.log \
+--http-log-path=/var/log/nginx/access.log \
+--with-http_gzip_static_module \
+--http-client-body-temp-path=/var/temp/nginx/client \
+--http-proxy-temp-path=/var/temp/nginx/proxy \
+--http-fastcgi-temp-path=/var/temp/nginx/fastcgi \
+--http-uwsgi-temp-path=/var/temp/nginx/uwsgi \
+--http-scgi-temp-path=/var/temp/nginx/scgi \
+--add-module=/root/fastdfs/fastdfs-nginx-module/src
+# ? 如果你想配置 fastdfs 加上一条
+# --add-module=/root/fastdfs/fastdfs-nginx-module/src
+# ./configure --add-module=$YOUR_PATH/fastdfs-nginx-module/src
+# sumary
+  nginx path prefix: "/usr/local/nginx"
+  nginx binary file: "/usr/local/nginx/sbin/nginx"
+  nginx modules path: "/usr/local/nginx/modules"
+  nginx configuration prefix: "/usr/local/nginx/conf"
+  nginx configuration file: "/usr/local/nginx/conf/nginx.conf"
+  nginx pid file: "/var/run/nginx/nginx.pid"
+  nginx error log file: "/var/log/nginx/error.log"
+  nginx http access log file: "/var/log/nginx/access.log"
+  nginx http client request body temporary files: "/var/temp/nginx/client"
+  nginx http proxy temporary files: "/var/temp/nginx/proxy"
+  nginx http fastcgi temporary files: "/var/temp/nginx/fastcgi"
+  nginx http uwsgi temporary files: "/var/temp/nginx/uwsgi"
+  nginx http scgi temporary files: "/var/temp/nginx/scgi"
+```
 
 
 
