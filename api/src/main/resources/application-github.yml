@@ -11,3 +11,5 @@ spring:
     database: 0
   elasticsearch:
     uris: localhost:9200
+fdfs:
+  tracker-list: localhost:22122

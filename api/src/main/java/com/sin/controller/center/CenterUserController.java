@@ -6,6 +6,7 @@ import com.sin.pojo.bo.center.CenterUserBO;
 import com.sin.pojo.vo.UsersVO;
 import com.sin.resource.FileUploader;
 import com.sin.service.center.CenterUserService;
+import com.sin.service.dfs.FdfsService;
 import com.sin.util.CookieUtils;
 import com.sin.util.DateUtil;
 import com.sin.util.HttpJSONResult;
@@ -13,6 +14,7 @@ import com.sin.util.JsonUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.catalina.webresources.FileResource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,13 +43,57 @@ public class CenterUserController extends BaseController {
     @Autowired
     private FileUploader fileUploader;
 
-    @ApiOperation(value = "用户头像修改", notes = "用户头像修改", httpMethod = "POST")
+    @Autowired
+    private FdfsService fdfsService;
+
+    @ApiOperation(value = "fastfds用户头像保存", httpMethod = "post")
     @PostMapping("uploadFace")
+    public HttpJSONResult uploadFaceByFDFS(
+            @ApiParam(name = "userId", value = "用户id", required = true)
+            @RequestParam String userId,
+            @ApiParam(name = "file", value = "用户头像", required = true)
+            MultipartFile file,
+            HttpServletRequest request, HttpServletResponse response) {
+        String path = "";
+        if (file != null) {
+            String fileName = file.getOriginalFilename();
+            if (StringUtils.isNotBlank(fileName)) {
+                String fileNameArr[] = fileName.split("\\.");
+
+                String suffix = fileNameArr[fileNameArr.length - 1];
+                if (!suffix.equalsIgnoreCase("png")
+                        && !suffix.equalsIgnoreCase("jpg")
+                        && !suffix.equalsIgnoreCase("jpeg"))
+                    return HttpJSONResult.errorMsg("Wrong Image Format");
+                try {
+                    path = fdfsService.upload(file, suffix);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            return HttpJSONResult.errorMsg("Empty File!");
+        }
+        if(StringUtils.isBlank(path))
+            return HttpJSONResult.errorMsg("Empty File Path!");
+        String finalUserFaceUrl = fileUploader.getHost() + path;
+
+        Users userResult = centerUserService.updateUserFace(userId, finalUserFaceUrl);
+
+        UsersVO usersVO = conventUserVO(userResult);
+
+        CookieUtils.setCookie(request, response, "user",
+                JsonUtils.objectToJson(usersVO), true);
+        return HttpJSONResult.ok();
+    }
+
+    //    @ApiOperation(value = "用户头像修改", notes = "用户头像修改", httpMethod = "POST")
+//    @PostMapping("uploadFace")
     public HttpJSONResult uploadFace(
             @ApiParam(name = "userId", value = "用户id", required = true)
             @RequestParam String userId,
             @ApiParam(name = "file", value = "用户头像", required = true)
-                    MultipartFile file,
+            MultipartFile file,
             HttpServletRequest request, HttpServletResponse response) {
 
         // .sh .php
@@ -132,8 +178,6 @@ public class CenterUserController extends BaseController {
         CookieUtils.setCookie(request, response, "user",
                 JsonUtils.objectToJson(usersVO), true);
 
-        // TODO 后续要改，增加令牌token，会整合进redis，分布式会话
-
         return HttpJSONResult.ok();
     }
 
@@ -161,7 +205,6 @@ public class CenterUserController extends BaseController {
         UsersVO usersVO = conventUserVO(userResult);
         CookieUtils.setCookie(request, response, "user",
                 JsonUtils.objectToJson(usersVO), true);
-
 
 
         return HttpJSONResult.ok();

@@ -8,18 +8,22 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="pojo" />
-        <module name="mapper" />
         <module name="search" />
+        <module name="mapper" />
         <module name="api" />
         <module name="common" />
         <module name="service" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="fastdfs" target="16" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api" options="-parameters" />
       <module name="common" options="-parameters" />
+      <module name="fastdfs" options="-parameters" />
       <module name="mapper" options="-parameters" />
       <module name="pojo" options="-parameters" />
       <module name="search" options="-parameters" />

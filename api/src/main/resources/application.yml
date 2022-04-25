@@ -47,3 +47,11 @@ mapper:
 pagehelper:
   helperDialect: mysql
   supportMethodsArguments: true
+
+######################################################
+# FastDFS 配置
+######################################################
+fdfs:
+  connect-timeout: 30 # 连接超时时间
+  so-timeout: 30      # 读取超时时间
+#  tracker-list: 172.26.38.92:22122
