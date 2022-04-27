@@ -35,7 +35,7 @@
         <module>api</module>
         <!-- search -->
         <module>search</module>
-        <module>fastdfs</module>
+        <!--<module>fastdfs</module>-->
     </modules>
 
     <dependencies>
@@ -195,6 +195,12 @@
             <groupId>com.github.tobato</groupId>
             <artifactId>fastdfs-client</artifactId>
             <version>1.27.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
