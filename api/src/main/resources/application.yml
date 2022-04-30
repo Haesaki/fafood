@@ -11,9 +11,6 @@ spring:
   datasource: # 数据源的相关配置
     type: com.zaxxer.hikari.HikariDataSource # 数据源类型：HikariCP
     driver-class-name: com.mysql.cj.jdbc.Driver # mysql驱动
-    #    url: jdbc:mysql://localhost:3306/foodie-shop-dev?useUnicode=true&characterEncoding=UTF-8&autoReconnect
-    #    username: root
-    #    password: root
     hikari:
       connection-timeout: 30000 # 等待连接池分配连接的最大时长（毫秒），超过这个时长还没可用的连接则发生SQ
       minimum-idle: 5 # 最小连接数
@@ -27,10 +24,6 @@ spring:
     multipart:
       max-file-size: 512000 # 文件大小 500 KB
       max-request-size: 512000 # 文件请求大小 500 KB
-  # redis configuration
-  #  redis:
-  #    url: localhost:8080
-  #    password: localhost
 
 # mybatis 配置
 mybatis:

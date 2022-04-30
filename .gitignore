@@ -7,3 +7,5 @@
 
 /api/src/main/resources/application-dev.yml
 /api/randomPwd
+
+/api/src/main/resources/RedissonClientConf-dev.yaml

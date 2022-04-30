@@ -10,6 +10,8 @@ public class SubmitOrderBO {
     private Integer payMethod;
     private String leftMsg;
 
+    private String token;
+
     public String getUserId() {
         return userId;
     }
@@ -50,14 +52,23 @@ public class SubmitOrderBO {
         this.leftMsg = leftMsg;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
     @Override
     public String toString() {
         return "SubmitOrderBO{" +
                 "userId='" + userId + '\'' +
                 ", itemSpecIds='" + itemSpecIds + '\'' +
                 ", addressId='" + addressId + '\'' +
-                ", payMethod='" + payMethod + '\'' +
+                ", payMethod=" + payMethod +
                 ", leftMsg='" + leftMsg + '\'' +
+                ", token='" + token + '\'' +
                 '}';
     }
 }
